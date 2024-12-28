@@ -19,3 +19,15 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.post-list-container {
+  max-height: 550px; /* Chiều cao tối đa cho vùng cuộn */
+  overflow-y: scroll; /* Cho phép cuộn dọc */
+  overflow-x: hidden; /* Ẩn cuộn ngang */
+  scrollbar-width: none; /* Firefox: Ẩn thanh cuộn */
+  -ms-overflow-style: none; /* IE và Edge: Ẩn thanh cuộn */
+}
+
+.post-list-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari và Opera: Ẩn thanh cuộn */
+}
