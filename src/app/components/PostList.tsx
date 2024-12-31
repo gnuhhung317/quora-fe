@@ -1,7 +1,7 @@
-// 'use client'
+'use client'
 import { useEffect, useState } from "react";
 import Post from "./Post";
-import apiClient from "../../lib/apiCLient"
+import apiClient from "../../lib/apiClient"
 const posts = [
     {
         author: "Đức Hùng",

@@ -1,6 +1,9 @@
-// components/Post.tsx
-'use client'; import apiClient from "@/lib/apiCLient";
+'use client';
+import apiClient from "../../lib/apiClient";
 import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faThumbsUp, faThumbsDown } from "@fortawesome/free-solid-svg-icons";
+import CommentModal from "./CommentModal";
 
 type PostProps = {
   post: {
@@ -13,6 +16,25 @@ type PostProps = {
     upvotes: number;
     downvotes: number;
     comments: number;
+    isUpvoted: boolean | null;
+  };
+};
+
+type Comment = {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  content: string;
+  author: {
+    id: number;
+    fullName: string;
+    avatarUrl: string;
+    followed: boolean;
+  };
+  answerId: number;
+  interaction: {
+    upvote: number;
+    downvote: number;
   };
 };
 
@@ -22,14 +44,21 @@ export default function Post({ post }: PostProps) {
   const [upvotes, setUpvotes] = useState(post.upvotes);
   const [downvotes, setDownvotes] = useState(post.downvotes);
   const [comments, setComments] = useState(post.comments);
-  const [hasUpvoted, setHasUpvoted] = useState(false);
-  const [hasDownvoted, setHasDownvoted] = useState(false);
-
+  const [hasUpvoted, setHasUpvoted] = useState(post.isUpvoted === true);
+  const [hasDownvoted, setHasDownvoted] = useState(post.isUpvoted === false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentList, setCommentList] = useState<Comment[]>([]);
+  const [isDebounced, setIsDebounced] = useState(false); // Trạng thái debounce
   const toggleContent = () => {
     setIsExpanded(!isExpanded);
   };
 
   const handleInteraction = async (interactionType: 'upvote' | 'downvote') => {
+    if (isDebounced) {
+      return; // Nếu đang debounce, không làm gì cả
+    }
+
+    setIsDebounced(true);
     let isUpvote: boolean | null = null;
 
     // Determine the new state based on the current state
@@ -78,13 +107,25 @@ export default function Post({ post }: PostProps) {
       });
     } catch (error) {
       console.error('Error interacting with post:', error);
+    } finally {
+      setTimeout(() => {
+        setIsDebounced(false); // Kết thúc debounce sau 0.5 giây
+      }, 500);
     }
   };
 
-  const handleComment = () => {
-    // Logic để xử lý khi người dùng click vào comment
-    // Ví dụ: Mở modal, chuyển đến trang khác, v.v.
-    console.log("Comment clicked");
+  const handleComment = async () => {
+    try {
+      const response = await apiClient.get(`/comments?answerId=${post.id}`);
+      setCommentList(response.data);
+      setShowComments(true);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+    }
+  };
+
+  const handleCloseComments = () => {
+    setShowComments(false);
   };
 
   const handleShare = () => {
@@ -138,10 +179,16 @@ export default function Post({ post }: PostProps) {
         )}
       </div>
       <div className="flex items-center space-x-4 mt-2 text-gray-500">
-        <span onClick={() => handleInteraction("upvote")} className="cursor-pointer">
+        <span
+          onClick={() => handleInteraction("upvote")}
+          className={`cursor-pointer ${hasUpvoted ? "text-green-500" : ""}`}
+        >
           ▲ {upvotes}
         </span>
-        <span onClick={() => handleInteraction("downvote")} className="cursor-pointer">
+        <span
+          onClick={() => handleInteraction("downvote")}
+          className={`cursor-pointer ${hasDownvoted ? "text-red-500" : ""}`}
+        >
           ▼ {downvotes}
         </span>
         <span onClick={handleComment} className="cursor-pointer">
@@ -151,6 +198,9 @@ export default function Post({ post }: PostProps) {
           🔗 Share
         </span>
       </div>
+      {showComments && (
+        <CommentModal comments={commentList} onClose={handleCloseComments} />
+      )}
     </div>
   );
 }

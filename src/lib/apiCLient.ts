@@ -33,7 +33,7 @@ apiClient.interceptors.request.use(
 // Thêm Interceptor cho các phản hồi để xử lý lỗi 401
 apiClient.interceptors.response.use(
     (response) => {
-        if (response.data.code !== 200) {
+        if (response.data.code !== 200 || response.status !== 200) {
             toast.error(response.data.message);
         }
         return response;
@@ -41,6 +41,7 @@ apiClient.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             // Chuyển hướng người dùng về trang đăng nhập
+            toast.error(error.response.data.message);
             window.location.href = "/login";
         }
         return Promise.reject(error);

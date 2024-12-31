@@ -1,3 +1,5 @@
+'use client';
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHome,
@@ -5,8 +7,19 @@ import {
   faUsers,
   faBell,
 } from "@fortawesome/free-solid-svg-icons";
+import AddQuestionModal from "./AddQuestionModal";
 
-export default function Header() {
+const Header: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
   return (
     <header className="bg-white shadow-sm">
       <div className="container mx-auto flex items-center justify-between py-2 px-4">
@@ -34,7 +47,10 @@ export default function Header() {
             placeholder="Search Quora"
             type="text"
           />
-          <button className="bg-red-600 text-white px-4 py-1 rounded-full">
+          <button
+            className="bg-red-600 text-white px-4 py-1 rounded-full"
+            onClick={openModal}
+          >
             Add question
           </button>
           <img
@@ -44,6 +60,9 @@ export default function Header() {
           />
         </div>
       </div>
+      {isModalOpen && <AddQuestionModal closeModal={closeModal} />}
     </header>
   );
-}
+};
+
+export default Header;
